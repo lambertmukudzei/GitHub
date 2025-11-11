@@ -8,43 +8,43 @@ def hash_password(password):
     return hashed
 
 def verify_password(password, hashed):
-    #Check if a password matches the stored hash
+    #Check if a password matches the stored hash password
     return bcrypt.checkpw(password.encode('utf-8'), hashed)
 
 def register():
-    #Create a new user account
-    print("\n--- Registration ---")
+    #Please Register a new user account
+    print("\n--- Registration page---")
     username = input("Enter username: ")
     password = input("Enter password: ")
-    role = input("Enter role (admin/user): ")
+    user_role = input("Enter role (admin/user): ")
     
     hashed_password = hash_password(password)
     
     with open("users.txt", "a") as file:
-        file.write(f"{username},{hashed_password.decode('utf-8')},{role}\n")
+        file.write(f"{username},{hashed_password.decode('utf-8')},{user_role}\n")
     
-    print("Registration successful!")
+    print("Registration was quite successful! Good day")
 
 def login():
-    #Verify user login credentials
-    print("\n--- Login ---")
+    #Checking user login credentials
+    print("\n--- Login Page ---")
     username = input("Enter username: ")
     password = input("Enter password: ")
     
     try:
         with open("users.txt", "r") as file:
             for line in file:
-                stored_username, stored_hash, role = line.strip().split(",")
+                stored_username, stored_hash, user_role = line.strip().split(",")
                 
                 if stored_username == username:
                     if verify_password(password, stored_hash.encode('utf-8')):
-                        print(f"Login successful! Welcome {username} ({role})")
+                        print(f"Login successful! Welcome {username} ({user_role})")
                         return True
                     else:
                         print("Invalid password!")
                         return False
             
-        print("Username not found!")
+        print("Sorry Sir/Madam, Username not found!")
         return False
         
     except FileNotFoundError:
@@ -54,7 +54,7 @@ def login():
 def main():
     # My Main program loop
     while True:
-        print("\n=== Simple Auth System ===")
+        print("\n=== Very Simple Auth System ===")
         print("1. Register")
         print("2. Login") 
         print("3. Exit")
@@ -69,7 +69,8 @@ def main():
             print("Goodbye!")
             break
         else:
-            print("Invalid choice! Please try again.")
+            print("Incorrect choice! Please try another attempt.")
 
 if __name__ == "__main__":
     main()
+    # This is the end of my program
