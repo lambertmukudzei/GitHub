@@ -1,5 +1,0 @@
-﻿bcrypt==4.2.0
-pandas (data loading and manipulation)
-bcrypt (password hashing)
-sqlite3 (database operations, built-in)
-pathlib (file path management)

@@ -1,0 +1,4 @@
+Mukudzei,$2b$12$EFrqNzLtHYjDydDsA8ljFeDZ4VSjprahoLiGKqhPzADfjZIWuE6.6,admin
+M01061702,$2b$12$6nBDzNbQ9tAe02x5G.Pg2eXVNhE8oKYqMwtb51BL2v8lLO64VN/Tq,user
+MK,$2b$12$v5UptDZ82ocY/w7DC3ciku4/U0OLi/1sn4v8YwMjvaQHRGVGkO.lm,user
+MK2455@live.mdx.ac.uk,$2b$12$U58dVuhcOzDFXX2y/dEl7.kceWNXytM8.6WjjU04b9Ndg9k5zs2g6,USER
