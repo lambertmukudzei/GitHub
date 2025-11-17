@@ -18,10 +18,6 @@ This system allows users to register accounts and log in with proper passwords.
 - Data Storage: Plain text file (`users.txt`) with comma-separated values
 - Password Security: One-way hashing, no plaintext storage
 - Validation: Username (3-20 alphanumeric characters), Password (6-50 characters)
-## Installation
-
-```bash
-pip install -r requirements.txt
 
 ## Week 8: Database Implementation & CRUD Operations
 Student Name: Mukudzei Kunyetu-Lambert
@@ -83,6 +79,10 @@ CW2_M01061702_CST1510/
 └── requirements.txt       # Dependencies
 
 ## Installation
+
+```bash
+pip install -r requirements.txt
+
 Install dependencies: pip install -r requirements.txt
 
 Run setup: python main.py
