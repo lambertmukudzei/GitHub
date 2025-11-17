@@ -79,6 +79,7 @@ CW2_M01061702_CST1510/
 └── requirements.txt       # Dependencies
 ## Screenshots
 https://github.com/lambertmukudzei/GitHub/blob/main/Screenshot%202025-11-17%20192019.png
+https://github.com/lambertmukudzei/GitHub/blob/main/Screenshot%202025-11-17%20194119.png?raw=true
 
 
 ## Installation
