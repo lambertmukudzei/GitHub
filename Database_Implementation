@@ -1,0 +1,17 @@
+# Week 8: Database Implementation
+import sqlite3
+import pandas as pd
+import bcrypt
+from pathlib import Path
+import os
+
+# We must first Define paths
+DATA_DIR = Path("DATA")
+DB_PATH = DATA_DIR / "intelligence_platform.db"
+
+# We're now going to create the DATA folder
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+print("The Setup is complete!")
+print(f"📁 DATA folder: {DATA_DIR.resolve()}")
+print(f"Database will be at: {DB_PATH.resolve()}")
