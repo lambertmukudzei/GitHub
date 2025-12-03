@@ -1,9 +1,7 @@
-bcrypt==4.2.0
-sqlite3
-pip install streamlit pandas google-generativeai
-pandas>=2.0.0
-bcrypt>=4.0.0
-python-dotenv>=1.0.0
+# requirements.txt - MINIMAL & WORKING
 streamlit==1.29.0
 pandas==2.1.4
 google-generativeai==0.3.2
+bcrypt==4.1.2
+python-dotenv==1.0.0
+sqlite3
