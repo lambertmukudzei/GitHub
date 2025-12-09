@@ -1,0 +1,196 @@
+# Home.py 
+import streamlit as st
+import bcrypt
+import sqlite3
+import pandas as pd
+from pathlib import Path
+import sys
+import time
+
+# SIMPLE FIX: Replace st.rerun() with JavaScript refresh
+#Using JavaScript refresh because I used the standard Rerun function and it was giving me errors,Concluded it was a problem with my python package.
+#Consulted OpenAI and it assisted me with a workaround from my failing st.rerun code.
+def refresh_page():
+    """Refresh the page using JavaScript"""
+    st.markdown('<script>window.location.reload();</script>', unsafe_allow_html=True)
+    time.sleep(0.1)
+    st.stop()
+
+# Patch st.rerun if it doesn't exist or doesn't work
+if not hasattr(st, 'rerun') or not callable(getattr(st, 'rerun', None)):
+    st.rerun = refresh_page
+    print("✅ Using JavaScript page refresh for st.rerun()", file=sys.stderr)
+#WE MOVE ONTO PAGE CONFIGS.
+
+#We start off with the Page configuration
+st.set_page_config(
+    page_title="Intelligence Platform - Login",
+    page_icon="🔐",
+    layout="centered"
+)
+
+# Database Functions
+def connect_db():
+    db_path = Path("DATA") / "intelligence_platform.db"
+    return sqlite3.connect(str(db_path))
+
+def verify_password(username, password):
+    try:
+        conn = connect_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+        user = cursor.fetchone()
+        conn.close()
+        
+        if user:
+            stored_hash = user[2]
+            password_bytes = password.encode('utf-8')
+            hash_bytes = stored_hash.encode('utf-8')
+            
+            if bcrypt.checkpw(password_bytes, hash_bytes):
+                return True, user
+        return False, None
+    except Exception as e:
+        st.error(f"Database error: {e}")
+        return False, None
+
+def register_user_in_db(username, password, role="user"):
+    try:
+        password_bytes = password.encode('utf-8')
+        salt = bcrypt.gensalt()
+        hashed = bcrypt.hashpw(password_bytes, salt)
+        password_hash = hashed.decode('utf-8')
+        
+        conn = connect_db()
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
+            (username, password_hash, role)
+        )
+        conn.commit()
+        conn.close()
+        return True, "Registration successful!"
+    except sqlite3.IntegrityError:
+        return False, "Username already exists."
+    except Exception as e:
+        return False, f"Error: {str(e)}"
+
+# Initialize Session State
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+if "username" not in st.session_state:
+    st.session_state.username = ""
+if "user_role" not in st.session_state:
+    st.session_state.user_role = ""
+if "page" not in st.session_state:
+    st.session_state.page = "login"
+
+# Page Title
+st.title("🔐 Multi-Domain Intelligence Platform")
+st.write("Welcome! Please login or register to access the dashboard.")
+
+# Navigation based on page state
+if st.session_state.page == "dashboard":
+    # Redirect to dashboard simulation
+    st.success(f"✅ Logged in as **{st.session_state.username}**")
+    st.write("**You would now see the dashboard**")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("View Cyber Security"):
+            st.session_state.page = "cyber"
+            st.rerun()  # This will use our JavaScript refresh
+    with col2:
+        if st.button("Logout"):
+            st.session_state.logged_in = False
+            st.session_state.username = ""
+            st.session_state.user_role = ""
+            st.session_state.page = "login"
+            st.rerun()  # This will use our JavaScript refresh
+    
+    st.stop()
+
+elif st.session_state.page == "cyber":
+    st.success(f"Viewing Cyber Security Dashboard")
+    st.write("This would show the cyber security page")
+    
+    if st.button("← Back to Login"):
+        st.session_state.page = "login"
+        st.rerun()  # This will use our JavaScript refresh
+    
+    st.stop()
+
+# LOGIN/REGISTER (Default page)
+if st.session_state.logged_in:
+    st.success(f"✅ Already logged in as **{st.session_state.username}**")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Go to Dashboard"):
+            st.session_state.page = "dashboard"
+            st.rerun()  # This will use our JavaScript refresh
+    with col2:
+        if st.button("Logout"):
+            st.session_state.logged_in = False
+            st.session_state.username = ""
+            st.session_state.user_role = ""
+            st.rerun()  # This will use our JavaScript refresh
+    
+    st.stop()
+
+# Login/Register Tabs
+tab_login, tab_register = st.tabs(["Login", "Register"])
+
+with tab_login:
+    st.subheader("Login to Your Account")
+    
+    login_username = st.text_input("Username", key="login_username")
+    login_password = st.text_input("Password", type="password", key="login_password")
+    
+    if st.button("Login", type="primary"):
+        if login_username and login_password:
+            is_valid, user = verify_password(login_username, login_password)
+            
+            if is_valid:
+                st.session_state.logged_in = True
+                st.session_state.username = login_username
+                st.session_state.user_role = user[3] if user and len(user) > 3 else "user"
+                st.session_state.page = "dashboard"
+                
+                st.success(f"Welcome back, {login_username}! 🎉")
+                st.balloons()
+                st.rerun()  # This will use our JavaScript refresh
+            else:
+                st.error("Invalid username or password.")
+        else:
+            st.warning("Please enter both username and password")
+    
+    if st.button("Use Demo"):
+        st.info("Try: Username: test_user, Password: SecurePass123!")
+
+with tab_register:
+    st.subheader("Create a New Account")
+    
+    new_username = st.text_input("Choose a username", key="register_username")
+    new_password = st.text_input("Choose a password", type="password", key="register_password")
+    confirm_password = st.text_input("Confirm password", type="password", key="register_confirm")
+    
+    if st.button("Create Account", type="primary"):
+        if not new_username or not new_password:
+            st.warning("Please fill in all fields.")
+        elif new_password != confirm_password:
+            st.error("Passwords do not match.")
+        elif len(new_password) < 6:
+            st.error("Password must be at least 6 characters.")
+        else:
+            success, message = register_user_in_db(new_username, new_password)
+            
+            if success:
+                st.success("✅ Account created successfully!")
+                st.info("Please login with your new account.")
+            else:
+                st.error(f"Registration failed: {message}")
+
+# Footer
+st.divider()
+st.caption("🔐 My Secure authentication system")
