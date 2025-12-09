@@ -1,0 +1,8 @@
+# requirements.txt 
+streamlit==1.24.0
+pandas==2.1.4
+google-generativeai==0.3.2
+bcrypt==4.1.2
+python-dotenv==1.0.0
+#Run streamlit run Home.py to start the app
+#Virtual environment can be created using python -m venv .venv if the file doesn't run
