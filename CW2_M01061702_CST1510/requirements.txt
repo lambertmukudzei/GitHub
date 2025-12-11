@@ -5,4 +5,6 @@ google-generativeai==0.3.2
 bcrypt==4.1.2
 python-dotenv==1.0.0
 #Run streamlit run Home.py to start the app
+#IF streamlit run Home.py does not work, use python -m streamlit run Home.py or Streamlit run .\Home.py
+#You must use a valid API key
 #Virtual environment can be created using python -m venv .venv if the file doesn't run
