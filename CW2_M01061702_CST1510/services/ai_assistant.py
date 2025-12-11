@@ -17,7 +17,7 @@ class AIAssistant:
         
         if self.api_key:  # If we have a key
             genai.configure(api_key=self.api_key)  # Connect to Google
-            self.model = genai.GenerativeModel('gemini-pro')  # Use Gemini Pro
+            self.model = genai.GenerativeModel("models/gemini-2.0-flash") # Using Gemini 2.0 Flash model
             self._history = []  # Store chat history
         else:
             self.model = None  # No AI without key
