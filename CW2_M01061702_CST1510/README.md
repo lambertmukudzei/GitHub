@@ -138,3 +138,8 @@ A Streamlit-based intelligence platform integrating cybersecurity, data science,
 - Secure login/register with bcrypt password hashing
 - Session-based authentication
 - Demo credentials: test_user / SecurePass123!
+#Key things to note
+-When Downloading my folders to mark, seperate my files from outside the folder and the ones in the folder.
+-The CW2_M01061702_CST1510 folder is the final submission
+-I noticed if the files are mixed, it can cause confusion with my Code.
+-If streamlit run Home.py does not work, use python -m streamlit run Home.py
