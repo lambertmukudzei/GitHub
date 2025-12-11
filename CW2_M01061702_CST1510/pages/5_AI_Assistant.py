@@ -3,9 +3,20 @@
 
 # Importing libraries I need
 import streamlit as st  # For building the web page
-from services.ai_assistant import AIAssistant  # My custom AI assistant code
 import os  # For working with operating system (like file paths)
-from dotenv import load_dotenv  # For loading secret API keys from .env file
+import sys
+
+# Clear cache to ensure fresh imports
+st.cache_resource.clear()
+
+# Add the parent directory to Python path so we can import services
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+from dotenv import load_dotenv
+from services.ai_assistant import AIAssistant  # My custom AI assistant code
+
+# Load environment variables from .env file ONCE at the beginning
+load_dotenv()
 
 # setting up my page
 st.set_page_config(
@@ -21,7 +32,7 @@ if "logged_in" not in st.session_state or not st.session_state.logged_in:
         st.switch_page("pages/1_Login.py")  # Takes user back to login
     st.stop()  # Stops code here - can't see the page without login
 
-#This is the header at the top of the page
+# This is the header at the top of the page
 col1, col2 = st.columns([3, 1])  # Two columns: big left (3/4), small right (1/4)
 with col1:  # Left column
     st.title("🤖 AI Assistant")  # Main title with robot emoji
@@ -37,120 +48,58 @@ with col2:  # Right column
         st.switch_page("pages/1_Login.py")  # Go back to login
 
 # setting up AI assistant
-@st.cache_resource  # Only loads once even if page refreshes
+@st.cache_resource(ttl=3600)  # Cache for 1 hour
 def get_ai_assistant():
-    load_dotenv()  # Loads secret keys from .env file (keeps API key hidden)
+    # Get the API key from environment variables
     api_key = os.getenv("GOOGLE_API_KEY")  # Gets the API key from .env
+    if not api_key:
+        st.error("Google API Key not found. Please check your .env file.")
+        st.stop()
     return AIAssistant(api_key=api_key)  # Creates AI assistant with the key
 
-ai_assistant = get_ai_assistant()  # Actually creates the AI assistant
+try:
+    ai_assistant = get_ai_assistant()  # Actually creates the AI assistant
+    
+    # Debug: Check if method exists
+    if not hasattr(ai_assistant, 'send_message'):
+        st.error(f"ERROR: AIAssistant object has no 'send_message' method.")
+        st.error(f"Available methods: {[m for m in dir(ai_assistant) if not m.startswith('_')]}")
+        st.stop()
+except Exception as e:
+    st.error(f"Failed to create AI Assistant: {str(e)}")
+    st.stop()
 
 # The main chat interface
-st.subheader("💬 Chat with AI Assistant")#Added a chat emoji to add flair, In th Lab wew ere told we can use our own emoji's
+st.subheader("Chat with AI Assistant")
 
-# Initialize chat history (if it doesn't exist yet)
-# Session state remembers conversation even if page refreshes
+# Initialize chat history
 if "messages" not in st.session_state:
-    st.session_state.messages = []  # Empty list to store messages
+    st.session_state.messages = []
 
-# Display previous chat messages (like looking at old texts)
+# Display previous chat messages
 for message in st.session_state.messages:
-    with st.chat_message(message["role"]):  # Shows as user or assistant
-        st.markdown(message["content"])  # Shows the message text
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
 # The input box where the user actually types their question
-# := is called "walrus operator" - assigns and checks at same time
 if prompt := st.chat_input("Ask me anything about intelligence domains..."):
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": prompt})
     
     # Display user message in chat
     with st.chat_message("user"):
-        st.markdown(prompt)  # Shows what user typed
+        st.markdown(prompt)
     
-    # Get AI response (this might take a few seconds)
-    with st.chat_message("assistant"):  # Shows as AI assistant
-        with st.spinner("Thinking..."):  # Shows loading spinner
-            response = ai_assistant.send_message(prompt)  # Send to AI and get response
-            st.markdown(response)  # Show AI's answer
+    # Get AI response
+    with st.chat_message("assistant"):
+        with st.spinner("Thinking..."):
+            try:
+                response = ai_assistant.send_message(prompt)
+                st.markdown(response)
+            except Exception as e:
+                error_msg = f"Error getting AI response: {str(e)}"
+                st.error(error_msg)
+                response = error_msg
     
-    # Add AI response to chat history (so we remember the conversation)
+    # Add AI response to chat history
     st.session_state.messages.append({"role": "assistant", "content": response})
-
-# CLEAR CHAT BUTTON (START OVER)
-if st.button("Clear Chat History"):
-    st.session_state.messages = []  # Empty the messages list
-    ai_assistant.clear_history()  # Also clear AI's memory of conversation
-    st.rerun()  # Refresh page to show empty chat
-
-# the predefined questions section
-st.subheader("Quick Questions")
-col1, col2, col3 = st.columns(3)  # 3 columns for quick questions
-
-with col1:
-    if st.button("Cybersecurity Best Practices"):
-        with st.spinner("Getting answer..."):  # Shows loading
-            # Ask AI a specific question
-            response = ai_assistant.send_message(
-                "What are the top 5 cybersecurity best practices for a small business?"
-            )
-            st.info(response[:200] + "...")  # Show first 200 characters
-
-with col2:
-    if st.button("Data Analysis Techniques"):
-        with st.spinner("Getting answer..."):
-            response = ai_assistant.send_message(
-                "What are the most effective data analysis techniques for customer churn prediction?"
-            )
-            st.info(response[:200] + "...")
-
-with col3:
-    if st.button("IT Ticket Management"):
-        with st.spinner("Getting answer..."):
-            response = ai_assistant.send_message(
-                "How can I improve IT ticket resolution times in a help desk environment?"
-            )
-            st.info(response[:200] + "...")
-
-# API KEY CONFIGURATION SECTION (FOR SETUP HELP)
-with st.expander("🔧 AI Assistant Configuration"):  # Click to expand
-    st.write("**Current API Key Status:**")
-    if ai_assistant.api_key:
-        st.success("Succcess, API Key is configured")  #success message
-    else:
-        st.warning("Error, API Key not found")  # Yellow warning
-        st.info("Set your Google API key in the `.env` file as `GOOGLE_API_KEY=your_key_here`")
-
-# SIDEBAR NAVIGATION
-with st.sidebar:  # Everything here goes in sidebar
-    st.header("Navigation")
-    st.write("Navigate to other domains:")
-    
-    # Navigation buttons in two columns
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Cybersecurity"):
-            st.switch_page("pages/2_Cyber_Security.py")
-    with col2:
-        if st.button("Data Science"):
-            st.switch_page("pages/3_Data_Science.py")
-    
-    # IT Operations button
-    if st.button("IT Operations"):
-        st.switch_page("pages/4_IT_Operations.py")
-    
-    st.divider()  # Horizontal line
-    
-    # CHAT HISTORY IN SIDEBAR (SHOWS RECENT MESSAGES)
-    st.subheader("Recent Chat")
-    if st.session_state.messages:  # If there are messages
-        # Show last 5 messages ([-5:] means last 5 items)
-        for i, message in enumerate(st.session_state.messages[-5:]):
-            role = "user" if message["role"] == "user" else "AI" 
-            st.caption(f"{role} {message['content'][:50]}...")  # Show first 50 chars
-    else:
-        st.caption("No chat history yet")  # If no messages yet
-    
-    st.divider()  # Horizontal line
-    st.caption("CST1510 AI Assistant")  # Footer
-# End of my code
